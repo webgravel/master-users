@@ -1,0 +1,5 @@
+name: gravel-master-users
+requires: gravel-common
+
+symlinks:
+- [command.py, /gravel/pkg/gravel-master/operator.d/user]
