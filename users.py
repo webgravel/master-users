@@ -40,6 +40,7 @@ class User(graveldb.Table('users', PATH)):
         self.data.ready = False
         self.save()
 
+        target = gravel_master.Node(self.data.host)
         target.call('user', 'return', str(self.uid))
 
         self.data.host = None
