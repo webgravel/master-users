@@ -1,14 +1,17 @@
 import sys
 
+import gravelrpc
 import graveldb
 import gravel_master
+import cmd_util
 
 PATH = '/gravel/system/master'
 
 MIN_UID = 10000
 
 class User(graveldb.Table('users', PATH)):
-    default = dict(nick=None, host=None, ready=False)
+    default = dict(nick=None, host=None, ready=False,
+                   custom={})
     autocreate = False
 
     def validate(self):
@@ -32,9 +35,16 @@ class User(graveldb.Table('users', PATH)):
             self.data.host = target.name
             self.save()
 
-        target.call('user', 'take', str(self.uid))
+        self.save_custom()
         self.data.ready = True
         self.save()
+
+    def save_custom(self):
+        if self.data.host:
+            target = gravel_master.Node(self.data.host)
+            target.call('user', 'take', str(self.uid),
+                        func=cmd_util.call_with_stdin,
+                        stdin_data=gravelrpc.bson.dumps(self.data.custom))
 
     def migrate_out(self):
         self.data.ready = False
