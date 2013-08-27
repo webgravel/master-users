@@ -3,3 +3,4 @@ requires: gravel-common
 
 symlinks:
 - [command.py, /gravel/pkg/gravel-master/operator.d/user]
+- [pushallusers.py, /gravel/pkg/gravel-master/node.d/pushallusers]
