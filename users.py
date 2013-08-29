@@ -4,10 +4,12 @@ import gravelrpc
 import graveldb
 import gravel_master
 import cmd_util
+import random
 
 PATH = '/gravel/system/master'
 
 MIN_UID = 10000
+MAX_UID = 99999
 
 class User(graveldb.Table('users', PATH)):
     default = dict(nick=None, host=None, ready=False,
@@ -40,6 +42,9 @@ class User(graveldb.Table('users', PATH)):
         self.save()
 
     def save_custom(self):
+        '''
+        I'll update custom settings on user's host.
+        '''
         if self.data.host:
             target = gravel_master.Node(self.data.host)
             target.call('user', 'take', str(self.uid),
@@ -47,6 +52,10 @@ class User(graveldb.Table('users', PATH)):
                         stdin_data=gravelrpc.bson.dumps(self.data.custom))
 
     def migrate_out(self):
+        '''
+        I'll ask user's host to stop being host and then save the fact
+        to db.
+        '''
         self.data.ready = False
         self.save()
 
@@ -56,10 +65,22 @@ class User(graveldb.Table('users', PATH)):
         self.data.host = None
         self.save()
 
-def add(uid):
+def add(uid=-1):
+    '''
+    I will create user with given uid and return uid of created user.
+    If uid == -1, I'll find free one.
+    '''
+    find_uid = uid == -1
+    if find_uid:
+        uid = random.randrange(MIN_UID, MAX_UID)
     with User.table:
         user = User(uid, autocreate=True)
         if not user.exists:
             user.save()
+            return uid
         else:
-            sys.exit('User not added - already exists.')
+            if find_uid:
+                # collision - try again
+                return add(uid=-1)
+            else:
+                raise KeyError(uid)

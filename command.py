@@ -10,11 +10,12 @@ import users
 import cmd_util
 
 def action_add():
-    parser = argparse.ArgumentParser()
-    parser.add_argument('uid', type=int)
+    parser = argparse.ArgumentParser(description='Create user and print it\'s uid to stdout.')
+    parser.add_argument('uid', type=int, default=-1,
+                        help='ID of user to be added. (pass -1 to get first free one)')
     args = parser.parse_args()
 
-    users.add(args.uid)
+    print users.add(args.uid)
 
 def action_sethost():
     parser = argparse.ArgumentParser()
